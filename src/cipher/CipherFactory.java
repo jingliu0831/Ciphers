@@ -1,5 +1,10 @@
 package cipher;
 
+import cipher.myCiphers.CaesarCipher;
+import cipher.myCiphers.MonoCipher;
+import cipher.myCiphers.RandomSubstitutionCipher;
+import cipher.myCiphers.VigenereCipher;
+
 import java.math.BigInteger;
 
 /** Factory class for creating cipher objects. */

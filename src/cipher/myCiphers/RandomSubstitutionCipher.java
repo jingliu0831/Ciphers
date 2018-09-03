@@ -1,10 +1,10 @@
-package cipher;
+package cipher.myCiphers;
 
 import java.util.Random;
 
 public class RandomSubstitutionCipher extends MonoCipher {
 
-    RandomSubstitutionCipher() {
+    public RandomSubstitutionCipher() {
         super();
         setRandomKeyAsEncryptedAlphabet();
     }
@@ -15,7 +15,8 @@ public class RandomSubstitutionCipher extends MonoCipher {
 
         for (int i = 0; i < alphabet.length(); i++) {
             int offset = new Random().nextInt(25);
-            sbOfKey.append('A' + offset);
+            char letter = (char) ('A' + offset);
+            sbOfKey.append(letter);
         }
 
         encryptAlphabet = sbOfKey.toString();

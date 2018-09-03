@@ -1,8 +1,8 @@
-package cipher;
+package cipher.myCiphers;
 
 public class CaesarCipher extends MonoCipher {
 
-    CaesarCipher(int shftParam) {
+    public CaesarCipher(int shftParam) {
         super();
         setEncryptAlphabet(shftParam);
     }
@@ -12,7 +12,8 @@ public class CaesarCipher extends MonoCipher {
 
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < alphabet.length(); i++) {
-            sb.append(alphabet.charAt(i) + shiftParam);
+            char letter = (char) (alphabet.charAt(i) + shiftParam);
+            sb.append(letter);
         }
 
         encryptAlphabet = sb.toString();
