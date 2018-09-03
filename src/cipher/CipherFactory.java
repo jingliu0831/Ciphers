@@ -14,7 +14,7 @@ public class CipherFactory {
      *            the encrypted alphabet
      */
     public Cipher getMonoCipher(String encrAlp) {
-        return null; // TODO implement
+        return new MonoCipher(encrAlp);
     }
 
     /**
@@ -24,7 +24,7 @@ public class CipherFactory {
      *            the cipher's shift parameter
      */
     public Cipher getCaesarCipher(int shftParam) {
-        return null; // TODO implement
+        return new CaesarCipher(shftParam);
     }
 
     /**
@@ -34,7 +34,7 @@ public class CipherFactory {
      *            the cipher's shift parameters. Note that A is a shift of 1.
      */
     public Cipher getVigenereCipher(String key) {
-        return null; // TODO implement
+        return new VigenereCipher(key);
     }
 
     /**
@@ -42,7 +42,7 @@ public class CipherFactory {
      * generated mapping.
      */
     public Cipher getRandomSubstitutionCipher() {
-        return null; // TODO implement
+        return new RandomSubstitutionCipher();
     }
 
     /**
