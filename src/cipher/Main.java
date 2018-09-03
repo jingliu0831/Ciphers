@@ -154,22 +154,23 @@ public class Main {
      *            String array of command line commands
      */
     public static void main(String[] args) {
+        CipherFactory cipherFactory = new CipherFactory();
+
         switch (args[0]) {
         case "--monosub":
-            // TODO Create a random substitution cipher object with the given
-            // alphabet
+            cipherFactory.getMonoCipher(""); // TODO: given alphabet
             break;
         case "--caesar":
-            // TODO Create a Caesar cipher object with the given shift parameter
+            cipherFactory.getCaesarCipher(0); // TODO: given shift parameter
             break;
         case "--random":
-            // TODO Create a random substitution cipher object
+            cipherFactory.getRandomSubstitutionCipher();
             break;
         case "--crackedCaesar":
             // TODO decrypt the given file
             break;
         case "--vigenere":
-            // TODO Create a new Vigenere Cipher with the given key word
+            cipherFactory.getVigenereCipher(""); // TODO: given key word
             break;
         case "--vigenereL":
             // TODO Create a new Vigenere Cipher with key word from given file
