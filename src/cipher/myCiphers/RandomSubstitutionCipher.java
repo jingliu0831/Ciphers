@@ -1,24 +1,41 @@
 package cipher.myCiphers;
 
+import java.util.ArrayList;
 import java.util.Random;
 
 public class RandomSubstitutionCipher extends MonoCipher {
 
-    public RandomSubstitutionCipher() {
+    private static RandomSubstitutionCipher instance = null;
+
+    private RandomSubstitutionCipher() {
         super();
-        setRandomKeyAsEncryptedAlphabet();
+        encryptAlphabet = generateRandomKey();
     }
 
-    private void setRandomKeyAsEncryptedAlphabet() {
-        String alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        StringBuilder sbOfKey = new StringBuilder();
+    private String generateRandomKey() {
+        StringBuilder sb = new StringBuilder();
 
-        for (int i = 0; i < alphabet.length(); i++) {
-            int offset = new Random().nextInt(25);
-            char letter = (char) ('A' + offset);
-            sbOfKey.append(letter);
+        ArrayList<Integer> availableShifts = new ArrayList<>();
+        for (int i = 0; i < 26; i++) {
+            availableShifts.add(i);
         }
 
-        encryptAlphabet = sbOfKey.toString();
+        while (!availableShifts.isEmpty()) {
+            int randomIndex = new Random().nextInt(availableShifts.size());
+            int shiftedChar = 'A' + availableShifts.get(randomIndex);
+            sb.append((char) ((shiftedChar > 'Z') ? shiftedChar - 'Z' - 1 + 'A' : shiftedChar));
+
+            availableShifts.remove(randomIndex);
+        }
+
+        return sb.toString();
+    }
+
+    public static RandomSubstitutionCipher getInstance() {
+        if (instance == null) {
+            instance = new RandomSubstitutionCipher();
+        }
+
+        return instance;
     }
 }

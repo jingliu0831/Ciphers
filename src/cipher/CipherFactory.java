@@ -44,7 +44,7 @@ public class CipherFactory {
      * generated mapping.
      */
     public Cipher getRandomSubstitutionCipher() {
-        return new RandomSubstitutionCipher();
+        return RandomSubstitutionCipher.getInstance();
     }
 
     /**
@@ -65,6 +65,6 @@ public class CipherFactory {
      *            decryption only
      */
     public Cipher getRSACipher(BigInteger n, BigInteger e, BigInteger d) {
-        return null; // TODO implement
+        return new RsaCipher(n, e, d);
     }
 }

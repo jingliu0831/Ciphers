@@ -23,14 +23,4 @@ public abstract class AbstractCipher implements Cipher {
         encrypt(in, out);
         return out.toString();
     }
-
-    @Override
-    public void save(OutputStream out) {
-        try {
-            out.flush();
-            out.close();
-        } catch (IOException ioe) {
-            System.out.println(ioe.getMessage());
-        }
-    }
 }

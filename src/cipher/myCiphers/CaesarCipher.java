@@ -8,11 +8,10 @@ public class CaesarCipher extends MonoCipher {
     }
 
     void setEncryptAlphabet(int shiftParam) {
-        String alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < alphabet.length(); i++) {
-            char letter = (char) (alphabet.charAt(i) + shiftParam);
+        for (int i = 0; i < 26; i++) {
+            int shiftedChar = 'A' + i + shiftParam;
+            char letter = (char) ((shiftedChar > 'Z') ? shiftedChar - 'Z' - 1 + 'A' : shiftedChar);
             sb.append(letter);
         }
 

@@ -1,11 +1,12 @@
 package cipher;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import cipher.MyCommandLineUtils.CommandLineUtils;
+import cipher.MyCommandLineUtils.FileUtils;
+import cipher.myCiphers.RsaCipher;
+
+import java.io.*;
+import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 
 /**
  * 
@@ -22,6 +23,8 @@ import java.io.IOException;
  *
  */
 public class Main {
+    private static InputStream inputStream;
+    private static OutputStream outputStream;
 
     /**
      * Create a BufferedReader that reads from a file
@@ -68,7 +71,7 @@ public class Main {
             }
             reader.close();
         } catch (IOException e) {
-            // TODO Add an appropriate error message
+            System.out.println("Error when reading file " + filename + "! " + e.getMessage());
         }
         return result.toString();
     }
@@ -100,17 +103,29 @@ public class Main {
      */
     public static void cipherFunction(String func, Cipher c, String name) {
         switch (func) {
-        case "--em":
-            // TODO Encrypt the given message
+        case "--em": // Encrypt the given msg
+            inputStream = new ByteArrayInputStream(name.getBytes(StandardCharsets.UTF_8));
+            c.encrypt(inputStream, outputStream);
             break;
-        case "--ef":
-            // TODO Encrypt the given file
+        case "--ef": // Encrypt the given file
+            try {
+                inputStream = new FileInputStream(new File(name));
+                c.encrypt(inputStream, outputStream);
+            } catch (IOException ioe) {
+                System.out.println(ioe.getMessage());
+            }
             break;
-        case "--dm":
-            // TODO Decrypt the given message
+        case "--dm": // Decrypt the given msg
+            inputStream = new ByteArrayInputStream(name.getBytes(StandardCharsets.UTF_8));
+            c.decrypt(inputStream, outputStream);
             break;
-        case "--df":
-            // TODO Decrypt the given file
+        case "--df": // Decrypt the given file
+            try {
+                inputStream = new FileInputStream(new File(name));
+                c.decrypt(inputStream, outputStream);
+            } catch (IOException ioe) {
+                System.out.println(ioe.getMessage());
+            }
             break;
         }
     }
@@ -130,17 +145,59 @@ public class Main {
             for (int i = start; i < args.length; i++) {
                 switch (args[i]) {
                 case "--print":
-                    // TODO Print result of applying the cipher to the console
+                    try {
+                        CommandLineUtils.ensureNoNextArg(args, i);
+
+                        outputStream = System.out;
+                        cipherFunction(args[0], c, args[1]);
+                        outputStream.close();
+                    } catch (IOException ioe) {
+                        System.out.println(ioe.getMessage());
+                    } catch (IllegalArgumentException iae) {
+                        System.out.println("Error: Invalid output command. Hint: [--print]");
+                    }
                     break;
                 case "--out":
-                    // TODO Print result of applying the cipher to a file
+                    try {
+                        CommandLineUtils.ensureNextArgIsFileOrMsg(args, i);
+
+                        outputStream = new FileOutputStream(new File(args[i + 1]));
+                        cipherFunction(args[0], c, args[1]);
+                        outputStream.close();
+                    } catch (IOException ioe) {
+                        System.out.println(ioe.getMessage());
+                    } catch (IllegalArgumentException iae) {
+                        System.out.println("Error: Invalid output command. Hint: [--out <file>]");
+                    }
                     break;
                 case "--save":
-                    // TODO Save current cipher to a file
+                    try {
+                        CommandLineUtils.ensureNextArgIsFileOrMsg(args, i);
+
+                        outputStream = new FileOutputStream(new File(args[i + 1]));
+                        c.save(outputStream);
+                        outputStream.close();
+                    } catch (IOException ioe) {
+                        System.out.println(ioe.getMessage());
+                    } catch (IllegalArgumentException iae) {
+                        System.out.println("Error: Invalid output command. Hint: [--save <file>]");
+                    }
                     break;
                 case "--savePu":
-                    // TODO If the current cipher is RSA, save the public key to
-                    // a file
+                    try {
+                        CommandLineUtils.ensureCipherIsRsa(c);
+                        CommandLineUtils.ensureNextArgIsFileOrMsg(args, i);
+
+                        outputStream = new FileOutputStream(new File(args[i + 1]));
+                        ((RsaCipher) c).savePu(outputStream);
+                        outputStream.close();
+                    } catch (IOException ioe) {
+                        System.out.println(ioe.getMessage());
+                    } catch (IllegalArgumentException iae) {
+                        System.out.println("Error: Invalid output command. Hint: [--save <file>]");
+                    } catch (UnsupportedOperationException uoe) {
+                        System.out.println("Error: Only RSA cipher has public key.");
+                    }
                     break;
                 }
             }
@@ -155,36 +212,142 @@ public class Main {
      */
     public static void main(String[] args) {
         CipherFactory cipherFactory = new CipherFactory();
+        Cipher cipher;
+
+        if (!CommandLineUtils.onlyOneCipherFunc(args)) {
+            throw new IllegalArgumentException("Error: You must have 1 and only 1 cipher function [--em|--ef|--dm|--df]!");
+        }
 
         switch (args[0]) {
         case "--monosub":
-            cipherFactory.getMonoCipher(""); // TODO: given alphabet
+            String encryptedAlphabet = readFile(args[1]);
+            cipher = cipherFactory.getMonoCipher(encryptedAlphabet);
+            processMessageWithCipher(args, cipher, 2); // --monosub file
             break;
         case "--caesar":
-            cipherFactory.getCaesarCipher(0); // TODO: given shift parameter
+            int shiftParam = Integer.parseInt(args[1]);
+            cipher = cipherFactory.getCaesarCipher(shiftParam);
+            processMessageWithCipher(args, cipher, 2); // --caesar 2
             break;
         case "--random":
-            cipherFactory.getRandomSubstitutionCipher();
+            cipher = cipherFactory.getRandomSubstitutionCipher();
+            processMessageWithCipher(args, cipher, 1); // --random
             break;
-        case "--crackedCaesar":
-            // TODO decrypt the given file
+        case "--crackedCaesar": // Decrypt the message
+            FrequencyAnalysisResult frequencyAnalysisResult = getCipherFromFreqAnalysis(args, 1);
+
+            int cipherFuncStart = 1 + frequencyAnalysisResult.argsCount;
+            if (!args[cipherFuncStart].equals("--df") && !args[cipherFuncStart].equals("--dm")) {
+                throw new UnsupportedOperationException("Error: --rsaPr can only decrypt message or decrypt message!");
+            }
+
+            cipher = frequencyAnalysisResult.cipher;
+            processMessageWithCipher(args, cipher, cipherFuncStart);
             break;
         case "--vigenere":
-            cipherFactory.getVigenereCipher(""); // TODO: given key word
+            String key = args[1];
+            if (key.length() > 128) {
+                throw new IllegalArgumentException("key length cannot be longer than 128");
+            }
+            cipher = cipherFactory.getVigenereCipher(key);
+            processMessageWithCipher(args, cipher, 2); // --vigenere key
             break;
         case "--vigenereL":
-            // TODO Create a new Vigenere Cipher with key word from given file
+            key = readFile(args[1]);
+            cipher = cipherFactory.getVigenereCipher(key);
+            processMessageWithCipher(args, cipher, 2); // --vigenereL file
             break;
         case "--rsa":
-            cipherFactory.getRSACipher();
+            cipher = cipherFactory.getRSACipher();
+            processMessageWithCipher(args, cipher, 1); // --rsa
             break;
-        case "--rsaPr":
-            // TODO Create an RSA encrypter/decrypter from private key in a file
+        case "--rsaPr": // Decrypt the message
+            if (!args[2].equals("--df") && !args[2].equals("--dm")) {
+                throw new UnsupportedOperationException("Error: --rsaPr can only decrypt message or decrypt message!");
+            }
+            cipher = getRsaCipherFromFile(cipherFactory, args[1]);
+            processMessageWithCipher(args, cipher, 2); // --rsaPr file
             break;
-        case "--rsaPu":
-            // TODO Create an encryption-only RSA cipher from public key in a
-            // file
+        case "--rsaPu": // Encrypt the message
+            if (!args[2].equals("--ef") && !args[2].equals("--em")) {
+                throw new UnsupportedOperationException("Error: --rsaPr can only decrypt message or decrypt message!");
+            }
+            cipher = getRsaCipherFromFile(cipherFactory, args[1]);
+            processMessageWithCipher(args, cipher, 2); // --rsaPu file
             break;
+        }
+    }
+
+    /** Return [n, e, d]. May have null in e or d. */
+    private static Cipher getRsaCipherFromFile(CipherFactory cipherFactory, String filename) {
+        BigInteger[] rsaKey;
+
+        String file = readFile(filename);
+        String[] keyStrs = file.split(","); // n=00000,d=00000
+
+        BigInteger n = new BigInteger(keyStrs[0].substring(2));
+
+        if (keyStrs[1].charAt(0) == 'e') {
+            BigInteger e = new BigInteger(keyStrs[1].substring(2));
+            rsaKey = new BigInteger[]{n, e, null};
+        } else if (keyStrs[1].charAt(0) == 'd') {
+            BigInteger d = new BigInteger(keyStrs[1].substring(2));
+            rsaKey = new BigInteger[]{n, null, d};
+        } else {
+            throw new IllegalArgumentException("Invalid RSA Key format! Please use \"n=000,[d,e]=000\" in key file...");
+        }
+
+        return cipherFactory.getRSACipher(rsaKey[0], rsaKey[1], rsaKey[2]);
+    }
+
+    private static void processMessageWithCipher(String[] args, Cipher cipher, int cipherFuncStart) {
+        String name = CommandLineUtils.composeMessage(args, cipherFuncStart + 1);
+        int nameLength = name.split(" ").length;
+
+        String[] funcAndOutput = new String[args.length - cipherFuncStart - nameLength + 1]; // --cipherType fileOrMsg
+        funcAndOutput[0] = args[cipherFuncStart]; // cipherFunc
+        funcAndOutput[1] = name; // args[3]
+        System.arraycopy(args, cipherFuncStart + 1 + nameLength, funcAndOutput, 2, funcAndOutput.length - 2);
+
+        outputOptions(funcAndOutput, cipher, 2);
+    }
+
+    public static FrequencyAnalysisResult getCipherFromFreqAnalysis(String[] args, int start) {
+        FrequencyAnalyzer sampleAnalyzer = new FrequencyAnalyzer();
+        FrequencyAnalyzer encryptedAnalyzer = new FrequencyAnalyzer();
+        int argsCount = 0;
+
+        if (args.length > start) {
+            for (int i = start; i < args.length; i++) {
+                switch (args[i]) {
+                    case "-t":
+                        if (args[i].charAt(0) == '-') {
+                            throw new IllegalArgumentException("Error: Invalid command! Hint: [-t <sampleFile>]");
+                        }
+                        FileUtils.addFileToFrequencyAnalyzer(args[i + 1], sampleAnalyzer);
+                        argsCount += 2;
+                        break;
+                    case "-c":
+                        if (args[i].charAt(0) == '-') {
+                            throw new IllegalArgumentException("Error: Invalid command! Hint: [-c <sampleFile>]");
+                        }
+                        FileUtils.addFileToFrequencyAnalyzer(args[i + 1], encryptedAnalyzer);
+                        argsCount += 2;
+                        break;
+                }
+            }
+        }
+
+        return new FrequencyAnalysisResult(FrequencyAnalyzer.getCipher(sampleAnalyzer, encryptedAnalyzer), argsCount);
+    }
+
+    static class FrequencyAnalysisResult {
+        Cipher cipher;
+        int argsCount;
+
+        public FrequencyAnalysisResult(Cipher c, int count) {
+            cipher = c;
+            argsCount = count;
         }
     }
 }

@@ -3,6 +3,7 @@ package cipher.myCiphers;
 import cipher.AbstractCipher;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 
 public class MonoCipher extends AbstractCipher {
     // "ABC...YZ" -> "BCDE....ZA"
@@ -36,8 +37,9 @@ public class MonoCipher extends AbstractCipher {
                 data = in.read();
             }
 
+            out.flush();
         } catch (IOException ioe) {
-            System.out.println(ioe.getMessage()); // TODO: deal with exception
+            System.out.println(ioe.getMessage());
         }
     }
 
@@ -61,8 +63,21 @@ public class MonoCipher extends AbstractCipher {
                 data = in.read();
             }
 
+            out.flush();
         } catch (IOException ioe) {
-            System.out.println(ioe.getMessage()); // TODO: deal with exception
+            System.out.println(ioe.getMessage());
+        }
+    }
+
+    @Override
+    public void save(OutputStream out) {
+        try {
+            out.write(encryptAlphabet.getBytes(StandardCharsets.UTF_8));
+            out.write((byte) '\n');
+
+            out.flush();
+        } catch (IOException ioe) {
+            System.out.println(ioe.getMessage());
         }
     }
 }
