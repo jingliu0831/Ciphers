@@ -176,7 +176,7 @@ public class Main {
             // TODO Create a new Vigenere Cipher with key word from given file
             break;
         case "--rsa":
-            // TODO Create new RSA cipher
+            cipherFactory.getRSACipher();
             break;
         case "--rsaPr":
             // TODO Create an RSA encrypter/decrypter from private key in a file

@@ -1,9 +1,6 @@
 package cipher;
 
-import cipher.myCiphers.CaesarCipher;
-import cipher.myCiphers.MonoCipher;
-import cipher.myCiphers.RandomSubstitutionCipher;
-import cipher.myCiphers.VigenereCipher;
+import cipher.myCiphers.*;
 
 import java.math.BigInteger;
 
@@ -54,7 +51,7 @@ public class CipherFactory {
      * Returns a new RSA private cipher with a randomly generated keys.
      */
     public Cipher getRSACipher() {
-        return null; // TODO implement
+        return new RsaCipher();
     }
 
     /**

@@ -1,12 +1,15 @@
 package cipher;
 
+import cipher.myCiphers.CaesarCipher;
+
 /** Analyses the frequency of different characters in some ciphertext and
  *  constructs a plausible cipher that could have produced that ciphertext.
  */
 public class FrequencyAnalyzer {
+    int[] frequencies;
 
     public FrequencyAnalyzer() {
-        //TODO implement
+        frequencies = new int[26];
     }
 
     /**
@@ -15,7 +18,12 @@ public class FrequencyAnalyzer {
      * @param c the character to be odded
      */
     public void addChar(char c) {
-        //TODO implement
+        if (!Character.isLetter(c)) {
+            return;
+        }
+
+        char upperCaseChar = Character.toUpperCase(c);
+        frequencies[upperCaseChar - 'A']++;
     }
 
     /**
@@ -23,7 +31,12 @@ public class FrequencyAnalyzer {
      * @return the frequency of the given character
      */
     public int getFrequency(char c) {
-        return -1; //TODO implement
+        if (!Character.isLetter(c)) {
+            return -1;
+        }
+
+        char upperCaseChar = Character.toUpperCase(c);
+        return frequencies[upperCaseChar - 'A'];
     }
 
     /**
@@ -38,6 +51,23 @@ public class FrequencyAnalyzer {
      */
     public static AbstractCipher getCipher(FrequencyAnalyzer sample,
             FrequencyAnalyzer encrypted) {
-        return null; //TODO implement
+
+        // normally the most frequent char is 'E' in letters, so we can check shiftparam by comparing most frequent char
+        int shiftParam = encrypted.mostFrequentChar() - sample.mostFrequentChar();
+
+        return new CaesarCipher(shiftParam);
+    }
+
+    private int mostFrequentChar() {
+        int mostFrequenctCharIndex = 0;
+        int maxFrequency = 0;
+
+        for (int i = 0; i < 26; i++) {
+            if (frequencies[i] > maxFrequency) {
+                mostFrequenctCharIndex = i;
+            }
+        }
+
+        return (char) (mostFrequenctCharIndex + 'A');
     }
 }
