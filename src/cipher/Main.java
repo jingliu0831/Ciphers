@@ -26,6 +26,26 @@ public class Main {
     private static InputStream inputStream;
     private static OutputStream outputStream;
 
+    //TODO: RSA cipher is not performing correctly.
+    //TODO: message composition (from ' to ') did not work well in command line
+
+    /**
+     * Read in command line functions and perform the specified actions
+     *
+     * @param args
+     *            String array of command line commands
+     */
+    public static void main(String[] args) {
+        CipherFactory cipherFactory = new CipherFactory();
+
+        try {
+            CommandLineUtils.validateCommandArgs(args);
+            processCommandLine(args, cipherFactory);
+        } catch (Exception e) {
+            CommandLineUtils.printHelpMessage();
+        }
+    }
+
     /**
      * Create a BufferedReader that reads from a file
      * 
@@ -150,7 +170,8 @@ public class Main {
 
                         outputStream = System.out;
                         cipherFunction(args[0], c, args[1]);
-                        outputStream.close();
+                        outputStream.write((byte) '\n');
+//                        outputStream.close();
                     } catch (IOException ioe) {
                         System.out.println(ioe.getMessage());
                     } catch (IllegalArgumentException iae) {
@@ -163,7 +184,7 @@ public class Main {
 
                         outputStream = new FileOutputStream(new File(args[i + 1]));
                         cipherFunction(args[0], c, args[1]);
-                        outputStream.close();
+//                        outputStream.close();
                     } catch (IOException ioe) {
                         System.out.println(ioe.getMessage());
                     } catch (IllegalArgumentException iae) {
@@ -176,7 +197,7 @@ public class Main {
 
                         outputStream = new FileOutputStream(new File(args[i + 1]));
                         c.save(outputStream);
-                        outputStream.close();
+//                        outputStream.close();
                     } catch (IOException ioe) {
                         System.out.println(ioe.getMessage());
                     } catch (IllegalArgumentException iae) {
@@ -190,7 +211,7 @@ public class Main {
 
                         outputStream = new FileOutputStream(new File(args[i + 1]));
                         ((RsaCipher) c).savePu(outputStream);
-                        outputStream.close();
+//                        outputStream.close();
                     } catch (IOException ioe) {
                         System.out.println(ioe.getMessage());
                     } catch (IllegalArgumentException iae) {
@@ -204,77 +225,66 @@ public class Main {
         }
     }
 
-    /**
-     * Read in command line functions and perform the specified actions
-     * 
-     * @param args
-     *            String array of command line commands
-     */
-    public static void main(String[] args) {
-        CipherFactory cipherFactory = new CipherFactory();
+    private static void processCommandLine(String[] args, CipherFactory cipherFactory) {
         Cipher cipher;
 
-        if (!CommandLineUtils.onlyOneCipherFunc(args)) {
-            throw new IllegalArgumentException("Error: You must have 1 and only 1 cipher function [--em|--ef|--dm|--df]!");
-        }
-
         switch (args[0]) {
-        case "--monosub":
-            String encryptedAlphabet = readFile(args[1]);
-            cipher = cipherFactory.getMonoCipher(encryptedAlphabet);
-            processMessageWithCipher(args, cipher, 2); // --monosub file
-            break;
-        case "--caesar":
-            int shiftParam = Integer.parseInt(args[1]);
-            cipher = cipherFactory.getCaesarCipher(shiftParam);
-            processMessageWithCipher(args, cipher, 2); // --caesar 2
-            break;
-        case "--random":
-            cipher = cipherFactory.getRandomSubstitutionCipher();
-            processMessageWithCipher(args, cipher, 1); // --random
-            break;
-        case "--crackedCaesar": // Decrypt the message
-            FrequencyAnalysisResult frequencyAnalysisResult = getCipherFromFreqAnalysis(args, 1);
+            case "--monosub":
+                String encryptedAlphabet = readFile(args[1]);
+                cipher = cipherFactory.getMonoCipher(encryptedAlphabet);
+                processMessageWithCipher(args, cipher, 2); // --monosub file
+                break;
+            case "--caesar":
+                int shiftParam = Integer.parseInt(args[1]);
+                cipher = cipherFactory.getCaesarCipher(shiftParam);
+                processMessageWithCipher(args, cipher, 2); // --caesar 2
+                break;
+            case "--random":
+                cipher = cipherFactory.getRandomSubstitutionCipher();
+                processMessageWithCipher(args, cipher, 1); // --random
+                break;
+            case "--crackedCaesar": // Decrypt the message
+                FrequencyAnalysisResult frequencyAnalysisResult = getCipherFromFreqAnalysis(args, 1);
 
-            int cipherFuncStart = 1 + frequencyAnalysisResult.argsCount;
-            if (!args[cipherFuncStart].equals("--df") && !args[cipherFuncStart].equals("--dm")) {
-                throw new UnsupportedOperationException("Error: --rsaPr can only decrypt message or decrypt message!");
-            }
+                int cipherFuncStart = 1 + frequencyAnalysisResult.argsCount;
+                if (!args[cipherFuncStart].equals("--df") && !args[cipherFuncStart].equals("--dm")) {
+                    throw new UnsupportedOperationException("Error: --rsaPr can only decrypt message or decrypt message!");
+                }
 
-            cipher = frequencyAnalysisResult.cipher;
-            processMessageWithCipher(args, cipher, cipherFuncStart);
-            break;
-        case "--vigenere":
-            String key = args[1];
-            if (key.length() > 128) {
-                throw new IllegalArgumentException("key length cannot be longer than 128");
-            }
-            cipher = cipherFactory.getVigenereCipher(key);
-            processMessageWithCipher(args, cipher, 2); // --vigenere key
-            break;
-        case "--vigenereL":
-            key = readFile(args[1]);
-            cipher = cipherFactory.getVigenereCipher(key);
-            processMessageWithCipher(args, cipher, 2); // --vigenereL file
-            break;
-        case "--rsa":
-            cipher = cipherFactory.getRSACipher();
-            processMessageWithCipher(args, cipher, 1); // --rsa
-            break;
-        case "--rsaPr": // Decrypt the message
-            if (!args[2].equals("--df") && !args[2].equals("--dm")) {
-                throw new UnsupportedOperationException("Error: --rsaPr can only decrypt message or decrypt message!");
-            }
-            cipher = getRsaCipherFromFile(cipherFactory, args[1]);
-            processMessageWithCipher(args, cipher, 2); // --rsaPr file
-            break;
-        case "--rsaPu": // Encrypt the message
-            if (!args[2].equals("--ef") && !args[2].equals("--em")) {
-                throw new UnsupportedOperationException("Error: --rsaPr can only decrypt message or decrypt message!");
-            }
-            cipher = getRsaCipherFromFile(cipherFactory, args[1]);
-            processMessageWithCipher(args, cipher, 2); // --rsaPu file
-            break;
+                cipher = frequencyAnalysisResult.cipher;
+                processMessageWithCipher(args, cipher, cipherFuncStart);
+                break;
+            case "--vigenere":
+                String key = args[1];
+                if (key.length() > 128) {
+                    throw new IllegalArgumentException("key length cannot be longer than 128");
+                }
+                cipher = cipherFactory.getVigenereCipher(key);
+                processMessageWithCipher(args, cipher, 2); // --vigenere key
+                break;
+            case "--vigenereL":
+                key = readFile(args[1]);
+                cipher = cipherFactory.getVigenereCipher(key);
+                processMessageWithCipher(args, cipher, 2); // --vigenereL file
+                break;
+            case "--rsa":
+                cipher = cipherFactory.getRSACipher();
+                processMessageWithCipher(args, cipher, 1); // --rsa
+                break;
+            case "--rsaPr": // Decrypt the message
+                if (!args[2].equals("--df") && !args[2].equals("--dm")) {
+                    throw new UnsupportedOperationException("Error: --rsaPr can only decrypt message or decrypt message!");
+                }
+                cipher = getRsaCipherFromFile(cipherFactory, args[1]);
+                processMessageWithCipher(args, cipher, 2); // --rsaPr file
+                break;
+            case "--rsaPu": // Encrypt the message
+                if (!args[2].equals("--ef") && !args[2].equals("--em")) {
+                    throw new UnsupportedOperationException("Error: --rsaPr can only decrypt message or decrypt message!");
+                }
+                cipher = getRsaCipherFromFile(cipherFactory, args[1]);
+                processMessageWithCipher(args, cipher, 2); // --rsaPu file
+                break;
         }
     }
 
@@ -310,6 +320,13 @@ public class Main {
         System.arraycopy(args, cipherFuncStart + 1 + nameLength, funcAndOutput, 2, funcAndOutput.length - 2);
 
         outputOptions(funcAndOutput, cipher, 2);
+
+        try {
+            outputStream.flush();
+            outputStream.close();
+        } catch (IOException ioe) {
+            System.out.println("Error: Unable to close outputstream!");
+        }
     }
 
     public static FrequencyAnalysisResult getCipherFromFreqAnalysis(String[] args, int start) {
