@@ -97,10 +97,10 @@ public class RsaCipher extends AbstractCipher {
             String nKeyStr = "n=" + n.toString();
             String dKeyStr = "d=" + d.toString();
 
-            out.write(nKeyStr.getBytes(StandardCharsets.UTF_8));
+            out.write(nKeyStr.getBytes(StandardCharsets.ISO_8859_1));
             out.write((byte) '\n');
 
-            out.write(dKeyStr.getBytes(StandardCharsets.UTF_8));
+            out.write(dKeyStr.getBytes(StandardCharsets.ISO_8859_1));
             out.write((byte) '\n');
 
             out.flush();
@@ -114,10 +114,10 @@ public class RsaCipher extends AbstractCipher {
             String nKeyStr = "n=" + n.toString();
             String eKeyStr = "e=" + e.toString();
 
-            out.write(nKeyStr.getBytes(StandardCharsets.UTF_8));
+            out.write(nKeyStr.getBytes(StandardCharsets.ISO_8859_1));
             out.write((byte) '\n');
 
-            out.write(eKeyStr.getBytes(StandardCharsets.UTF_8));
+            out.write(eKeyStr.getBytes(StandardCharsets.ISO_8859_1));
             out.write((byte) '\n');
 
             out.flush();

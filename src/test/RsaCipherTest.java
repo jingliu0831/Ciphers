@@ -13,9 +13,12 @@ public class RsaCipherTest {
         RsaCipher rsaCipher = new RsaCipher();
 
         String input1 = "Inheritance is cool!";
+        String input2 = "resources/input.txt";
+        String input3 = "resources/test.pdf";
+        String input4 = "resources/rsaExample2.txt";
 
         try {
-            InputStream in = new ByteArrayInputStream(input1.getBytes(StandardCharsets.UTF_8));
+            InputStream in = new FileInputStream(new File(input3));
 
             File f = new File("output/rsaEncrypted");
             FileOutputStream fop = new FileOutputStream(f);
@@ -38,11 +41,9 @@ public class RsaCipherTest {
             File f = new File("output/rsaEncrypted");
             InputStream in = new FileInputStream(f);
 
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            FileOutputStream out = new FileOutputStream(new File("output/decrypted_input.pdf"));
 
             rsaCipher.decrypt(in, out);
-
-            System.out.println(out.toString());
         } catch (IOException ioe) {
             System.out.println(ioe.getMessage());
         }
@@ -86,5 +87,11 @@ public class RsaCipherTest {
 //
 //        System.out.println("\n6:");
 //        System.out.println(bigInt6);
+//
+//        byte[] testBytes7 = new byte[]{1, -1};
+//        BigInteger bigInt7 = new BigInteger(testBytes7);
+//        byte[] bytes = bigInt7.toByteArray();
+//        System.out.println("\n7:");
+//        System.out.println(bigInt7);
 //    }
 }

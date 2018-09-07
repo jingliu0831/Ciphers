@@ -124,7 +124,7 @@ public class Main {
     public static void cipherFunction(String func, Cipher c, String name) {
         switch (func) {
         case "--em": // Encrypt the given msg
-            inputStream = new ByteArrayInputStream(name.getBytes(StandardCharsets.UTF_8));
+            inputStream = new ByteArrayInputStream(name.getBytes(StandardCharsets.ISO_8859_1));
             c.encrypt(inputStream, outputStream);
             break;
         case "--ef": // Encrypt the given file
@@ -136,7 +136,7 @@ public class Main {
             }
             break;
         case "--dm": // Decrypt the given msg
-            inputStream = new ByteArrayInputStream(name.getBytes(StandardCharsets.UTF_8));
+            inputStream = new ByteArrayInputStream(name.getBytes(StandardCharsets.ISO_8859_1));
             c.decrypt(inputStream, outputStream);
             break;
         case "--df": // Decrypt the given file
@@ -311,13 +311,10 @@ public class Main {
     }
 
     private static void processMessageWithCipher(String[] args, Cipher cipher, int cipherFuncStart) {
-        String name = CommandLineUtils.composeMessage(args, cipherFuncStart + 1);
-        int nameLength = name.split(" ").length;
-
-        String[] funcAndOutput = new String[args.length - cipherFuncStart - nameLength + 1]; // --cipherType fileOrMsg
+        String[] funcAndOutput = new String[args.length - cipherFuncStart]; // --cipherType fileOrMsg
         funcAndOutput[0] = args[cipherFuncStart]; // cipherFunc
-        funcAndOutput[1] = name; // args[3]
-        System.arraycopy(args, cipherFuncStart + 1 + nameLength, funcAndOutput, 2, funcAndOutput.length - 2);
+        funcAndOutput[1] = args[cipherFuncStart + 1]; // args[3]
+        System.arraycopy(args, cipherFuncStart + 2, funcAndOutput, 2, funcAndOutput.length - 2);
 
         outputOptions(funcAndOutput, cipher, 2);
 

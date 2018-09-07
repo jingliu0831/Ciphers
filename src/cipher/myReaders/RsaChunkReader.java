@@ -39,15 +39,13 @@ public class RsaChunkReader implements ChunkReader {
         }
 
         try {
-            int ch = inputStream.read();
             int count = 0;
             LinkedList<Byte> byteList = new LinkedList<>();
 
-            while (ch != -1 && count < chunkSize) {
+            int ch;
+            while (count < chunkSize && ((ch = inputStream.read()) != -1)) {
                 byteList.add((byte) ch);
                 count++;
-
-                ch = inputStream.read();
             }
 
             int index = data.length - 1;

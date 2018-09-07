@@ -82,7 +82,7 @@ public class VigenereCipher extends AbstractCipher {
     @Override
     public void save(OutputStream out) {
         try {
-            out.write(encryptKey.getBytes(StandardCharsets.UTF_8));
+            out.write(encryptKey.getBytes(StandardCharsets.ISO_8859_1));
             out.write((byte) '\n');
 
             out.flush();

@@ -8,7 +8,7 @@ public abstract class AbstractCipher implements Cipher {
 
     @Override
     public String decrypt(String ciphertext) {
-        InputStream in = new ByteArrayInputStream(ciphertext.getBytes(StandardCharsets.UTF_8));
+        InputStream in = new ByteArrayInputStream(ciphertext.getBytes(StandardCharsets.ISO_8859_1));
         OutputStream out = new ByteArrayOutputStream();
 
         decrypt(in, out);
@@ -17,7 +17,7 @@ public abstract class AbstractCipher implements Cipher {
 
     @Override
     public String encrypt(String msg) {
-        InputStream in = new ByteArrayInputStream(msg.getBytes(StandardCharsets.UTF_8));
+        InputStream in = new ByteArrayInputStream(msg.getBytes(StandardCharsets.ISO_8859_1));
         OutputStream out = new ByteArrayOutputStream();
 
         encrypt(in, out);

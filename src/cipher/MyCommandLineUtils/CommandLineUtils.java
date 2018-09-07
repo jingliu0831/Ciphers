@@ -47,7 +47,21 @@ public class CommandLineUtils {
         return count != 0;
     }
 
-    /** get all msg wihtin ' and ' */
+    /** get all msg wihtin ' and '.
+     *
+     * The usage in Main class:
+     *
+     *   String name = CommandLineUtils.composeMessage(args, cipherFuncStart + 1);
+     *   int nameLength = name.split(" ").length;
+     *
+     *   String[] funcAndOutput = new String[args.length - cipherFuncStart - nameLength + 1]; // --cipherType fileOrMsg
+     *   funcAndOutput[0] = args[cipherFuncStart]; // cipherFunc
+     *   funcAndOutput[1] = name; // args[3]
+     *   System.arraycopy(args, cipherFuncStart + 1 + nameLength, funcAndOutput, 2, funcAndOutput.length - 2);
+     *
+     * However, the command line will automatically treat 'hello world' as one string,
+     * so this method is useless if we run the jar in command line.
+     * It will only be useful when you want to run the code in IntelliJ by providing the args to it. y*/
     public static String composeMessage(String[] args, int msgStart) {
         if (args[msgStart].charAt(0) != '\'') {
             return args[msgStart];
